@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="An online virtual Hebrew language keyboard with Nikkudot (vowels) support.">
+    <title>Nikuddon | Input & Edit Hebrew Text and Nikkudot (Vowels)</title>
+    <style>
+        :root {
+            --bg-body: #f4f1ea;
+            --bg-panel: #ffffff;
+            --primary: #2c3e50;
+            --accent: #c0392b;
+            --highlight: #f39c12;
+            --text-main: #2c3e50;
+            --text-muted: #7f8c8d;
+            --border-radius: 6px;
+            --shadow-soft: 0 4px 6px rgba(0,0,0,0.05);
+            --font-ui: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --font-editor: 'Frank Ruhl Libre', 'David', serif;
+        }
+
+        * { box-sizing: border-box; touch-action: manipulation; }
+
+        body {
+            margin: 0; padding: 20px;
+            font-family: var(--font-ui);
+            background-color: var(--bg-body);
+            background-image: radial-gradient(#e0ded8 1px, transparent 1px);
+            background-size: 20px 20px;
+            color: var(--text-main);
+            display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh;
+        }
+
+        #bh  {
+            max-width: 800px;
+            width: 100%;
+            font-weight: bold;
+            font-family: monospace;
+        }
+        .app-container {
+            width: 100%; max-width: 800px;
+            background: var(--bg-panel);
+            border-radius: var(--border-radius);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            border-top: 5px solid var(--primary);
+            overflow: hidden;
+            display: flex; flex-direction: column; gap: 1rem;
+            padding-bottom: 2rem;
+        }
+
+        header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #eee;
+            background: #fafafa;
+            text-align: center;
+        }
+        
+        h1 { margin: 0; font-size: 1.5rem; color: var(--primary);}
+        h1 span { color: var(--accent); }
+        h2 { margin: 4px 0 0 0; font-size: .75em; color: #838383; }
+
+        .toolbar-section {
+            padding: 0 1.5rem;
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        .toolbar-label {
+            font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;
+            color: var(--text-muted); font-weight: 600;
+            align-items: center;
+        }
+
+        .button-group { display: flex; flex-wrap: wrap; gap: 8px;}
+
+        /* Buttons */
+        button {
+            border: 1px solid #dcdcdc; background: #fff;
+            color: var(--primary); border-radius: 4px;
+            padding: 8px 12px; cursor: pointer;
+            font-family: var(--font-ui); font-size: 0.9rem; font-weight: 500;
+            transition: all 0.1s ease;
+            min-height: 44px; display: flex; align-items: center; justify-content: center;
+            user-select: none; -webkit-user-select: none;
+        }
+        button:hover:not(:disabled) { background: #f0f0f0; transform: translateY(-1px); }
+        button:active:not(:disabled) { transform: translateY(0); background: #e2e6ea; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; background: #f9f9f9; }
+
+        .btn-action.danger { color: #c0392b; border-color: #fadbd8; }
+        .btn-action.danger:hover { background: #fdedec; }
+        .btn-nav { background: var(--primary); color: white; min-width: 60px; }
+        .btn-nav:hover:not(:disabled) { background: #34495e; color: white; }
+        .btn-nav.stop { background: var(--accent); }
+
+        /* Nekudot Grid */
+        .nekudot-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(48px, 1fr));
+            gap: 6px; margin-top: 5px; padding: 10px;
+            background: #f8f9fa; border-radius: var(--border-radius); border: 1px solid #eee;
+        }
+        .btn-nekuda {
+            font-family: var(--font-editor); font-size: 1.6rem;
+            line-height: 1; padding: 0; height: 48px;
+        }
+        .btn-nekuda.clear-nekuda {
+            font-size: 0.9rem; color: #c0392b; grid-column: span 2;
+        }
+
+        /* Input */
+        .input-wrapper { padding: 0 1.5rem; position: relative; }
+        textarea {
+            width: 100%; min-height: 180px; padding: 15px;
+            font-family: var(--font-editor); font-size: 28px; line-height: 1.5;
+            border: 2px solid #ddd; border-radius: var(--border-radius);
+            resize: vertical; outline: none; background: #fff; color: #000;
+        }
+        textarea:focus { border-color: var(--primary); }
+        textarea::selection { background: var(--highlight); color: white; }
+        textarea::placeholder {
+          text-align:center;
+        }
+
+        /* Keyboard */
+        .keyboard-section {
+            padding: 1rem 1.5rem; background: #f4f6f7;
+            border-top: 1px solid #e0e0e0; margin-top: 1rem;
+        }
+        .kb-row { display: flex; justify-content: center; gap: 6px; margin-bottom: 6px; }
+        .btn-key {
+            font-family: var(--font-ui); font-size: 1.1rem;
+            min-width: 40px; flex: 1; max-width: 60px;
+            box-shadow: 0 2px 0 #bdc3c7; border: 1px solid #bdc3c7;
+        }
+        .btn-key:active { box-shadow: none; transform: translateY(2px); }
+        .btn-key.space { flex: 5; max-width: 300px; }
+        .btn-key.backspace { flex: 1.5; background: #e0e0e0; font-size: 0.9rem; }
+
+        /* Help */
+        .help-section {
+            padding: 0 1.5rem; color: var(--text-muted); font-size: 0.85rem;
+            border-top: 1px solid #eee; margin-top: 10px; padding-top: 15px;
+        }
+        .help-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; text-align: left; }
+
+        /* Helper for english text */
+        .ltr { 
+            direction: ltr !important;
+            align-items: center;
+            text-align: center;
+        }
+        
+        @media (max-width: 600px) {
+            body { padding: 0; background: #fff; }
+            .app-container { border-radius: 0; box-shadow: none; border-top: none; }
+            textarea { font-size: 22px; }
+            .kb-row { gap: 3px; }
+            .btn-key { min-width: 30px; padding: 8px 2px; }
+            .help-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div id="bh">ב"ה</div>
+    <div class="app-container">
+        <header>
+            <h1>נִיקוּדוֹן <span>Nikkudon</span></h1>
+            <h2>Input & Edit Hebrew Text and Nikkudot (Vowels)</h2>
+        </header>
+
+        <div class="toolbar-section ltr">
+            <div class="toolbar-label">Global Actions</div>
+            <div class="button-group">
+                <button class="btn-action" onmousedown="event.preventDefault()" onclick="actions.undo()">Undo ↩</button>
+                <button class="btn-action" onmousedown="event.preventDefault()" onclick="actions.redo()">Redo ↪</button>
+                <button class="btn-action" onmousedown="event.preventDefault()" onclick="actions.copyToClipboard()">Copy 📋</button>
+                <button class="btn-action" onmousedown="event.preventDefault()" onclick="actions.copyReverse()">Copy Reverse ⇄</button>
+                <button class="btn-action" onmousedown="event.preventDefault()" onclick="actions.copyBase()">Copy Base (No Vowels)</button>
+                <button class="btn-action danger" onmousedown="event.preventDefault()" onclick="actions.clearAll()">Clear All 🗑️</button>
+            </div>
+        </div>
+
+        <div class="toolbar-section ltr">
+            <div class="toolbar-label">Letter Navigation</div>
+            <div class="button-group">
+                <button class="btn-nav" id="btnStart" onmousedown="event.preventDefault()" onclick="editor.startEditing()">Start / Edit</button>
+                <button class="btn-nav" id="btnPrev" onmousedown="event.preventDefault()" onclick="editor.move(-1)" disabled>&lt; Prev</button>
+                <button class="btn-nav" id="btnNext" onmousedown="event.preventDefault()" onclick="editor.move(1)" disabled>Next &gt;</button>
+                <button class="btn-nav" id="btnSkip" onmousedown="event.preventDefault()" onclick="editor.skip()" disabled>Skip</button>
+                <button class="btn-nav stop" id="btnStop" onmousedown="event.preventDefault()" onclick="editor.stopEditing()" disabled>Stop ■</button>
+            </div>
+        </div>
+
+        <div class="toolbar-section">
+            <div class="toolbar-label ltr">Nekudot Selector</div>
+            <div class="nekudot-grid" id="nekudotGrid">
+                <button class="btn-nekuda clear-nekuda" onmousedown="event.preventDefault()" onclick="editor.clearNekudotFromLetter()">Clear Letter</button>
+            </div>
+        </div>
+
+        <div class="input-wrapper">
+            <textarea id="mainInput" dir="rtl" placeholder="" spellcheck="false"></textarea>
+        </div>
+
+        <div class="keyboard-section">
+            <div id="keyboardContainer"></div>
+        </div>
+
+        <div class="help-section ltr">
+            <h3>Quick Start Guide</h3>
+            <div class="help-grid">
+                <div>
+                    <strong>Type Hebrew Text:</strong> Use your keyboard or tap the on-screen keyboard. Text flows right-to-left automatically.
+                </div>
+                <div>
+                    <strong>Add Vowels (Nekudot):</strong> Click <em>Start</em> to begin editing Nikuddot. The first Hebrew letter will be highlighted. Click any vowel symbol to add it to the selected letter.
+                </div>
+                <div>
+                    <strong>Navigate Between Letters:</strong> Use <em>Next</em> and <em>Prev</em> buttons or arrow keys (← →) to move between Hebrew letters. Click <em>Skip</em> to move forward without adding vowels.
+                </div>
+                <div>
+                    <strong>Edit Specific Letters:</strong> Highlight any letter in the text area, then click <em>Start</em> to edit from that position. Use <em>Clear Letter</em> to remove vowels from the current letter.
+                </div>
+                <div>
+                    <strong>Copy Options:</strong> <em>Copy</em> exports the full text with vowels. <em>Copy Base</em> removes all vowels. <em>Copy Reverse</em> reverses the string order.
+                </div>
+                <div>
+                    <strong>Stop Editing:</strong> Click <em>Stop</em> when finished adding vowels. You can resume anytime by clicking <em>Start</em> again.
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+
+        const HEBREW_RANGES = {
+            letters: /[\u05D0-\u05EA]/,
+            nekudot: /[\u0591-\u05C7]/g,
+            isNekuda: (char) => /[\u0591-\u05C7]/.test(char)
+        };
+
+        const NEKUDOT_MAP = [
+            { name: 'Kamatz', char: '\u05B8' }, { name: 'Patach', char: '\u05B7' },
+            { name: 'Tzere', char: '\u05B5' }, { name: 'Segol', char: '\u05B6' },
+            { name: 'Chirik', char: '\u05B4' }, { name: 'Cholam', char: '\u05B9' },
+            { name: 'Kubutz', char: '\u05BB' }, { name: 'Shuruk', char: '\u05BC' },
+            { name: 'Shva', char: '\u05B0' }, { name: 'Chatuf-Patach', char: '\u05B2' },
+            { name: 'Chatuf-Kamatz', char: '\u05B3' }, { name: 'Chatuf-Segol', char: '\u05B1' },
+            { name: 'Dagesh', char: '\u05BC' }, { name: 'Rafe', char: '\u05BF' },
+            { name: 'Shin Dot', char: '\u05C1' }, { name: 'Sin Dot', char: '\u05C2' }
+        ];
+
+        const KEYBOARD_LAYOUT = [
+            ['/', "'", 'ק', 'ר', 'א', 'ט', 'ו', 'ן', 'ם', 'פ', ']', '['],
+            ['ש', 'ד', 'ג', 'כ', 'ע', 'י', 'ח', 'ל', 'ך', 'ף', ',', '\\'],
+            ['ז', 'ס', 'ב', 'ה', 'נ', 'מ', 'צ', 'ת', 'ץ', '.']
+        ];
+
+        const els = {
+            input: document.getElementById('mainInput'),
+            grid: document.getElementById('nekudotGrid'),
+            keyboard: document.getElementById('keyboardContainer'),
+            btns: {
+                start: document.getElementById('btnStart'),
+                prev: document.getElementById('btnPrev'),
+                next: document.getElementById('btnNext'),
+                skip: document.getElementById('btnSkip'),
+                stop: document.getElementById('btnStop')
+            }
+        };
+
+        const state = {
+            history: [],
+            historyIndex: -1,
+            isEditing: false,
+            lastCursorStart: 0,
+            lastCursorEnd: 0
+        };
+
+        // --- History Manager ---
+        const historyManager = {
+            save() {
+                if (state.historyIndex < state.history.length - 1) {
+                    state.history = state.history.slice(0, state.historyIndex + 1);
+                }
+                const val = els.input.value;
+                if(state.history[state.historyIndex] !== val) {
+                    state.history.push(val);
+                    state.historyIndex++;
+                    if (state.history.length > 50) { state.history.shift(); state.historyIndex--; }
+                }
+            },
+            undo() {
+                if (state.historyIndex > 0) {
+                    state.historyIndex--;
+                    els.input.value = state.history[state.historyIndex];
+                    actions.restoreFocus();
+                }
+            },
+            redo() {
+                if (state.historyIndex < state.history.length - 1) {
+                    state.historyIndex++;
+                    els.input.value = state.history[state.historyIndex];
+                    actions.restoreFocus();
+                }
+            }
+        };
+
+        // --- Initialization ---
+        function init() {
+            renderKeyboard();
+            renderNekudotGrid();
+            historyManager.save();
+
+            // Track cursor aggressively
+            ['keyup', 'click', 'mouseup', 'focus', 'input', 'select'].forEach(evt => {
+                els.input.addEventListener(evt, () => {
+                    state.lastCursorStart = els.input.selectionStart;
+                    state.lastCursorEnd = els.input.selectionEnd;
+                    if (state.isEditing) editor.updateVisualization();
+                });
+            });
+
+            // Arrow keys for navigation in edit mode
+            els.input.addEventListener('keydown', (e) => {
+                if (!state.isEditing) return;
+                if (e.key === 'ArrowRight') { e.preventDefault(); editor.move(-1); }
+                else if (e.key === 'ArrowLeft') { e.preventDefault(); editor.move(1); }
+            });
+        }
+
+        // --- Rendering ---
+        function renderKeyboard() {
+            let html = '';
+            KEYBOARD_LAYOUT.forEach(row => {
+                html += '<div class="kb-row">';
+                row.forEach(key => {
+                    html += `<button class="btn-key" onmousedown="event.preventDefault()" onclick="keyboardInput('${key}')">${key}</button>`;
+                });
+                html += '</div>';
+            });
+            html += '<div class="kb-row">';
+            html += `<button class="btn-key space" onmousedown="event.preventDefault()" onclick="keyboardInput(' ')">Space</button>`;
+            html += `<button class="btn-key backspace" onmousedown="event.preventDefault()" onclick="keyboardBackspace()">⌫</button>`;
+            html += '</div>';
+            els.keyboard.innerHTML = html;
+        }
+
+        function renderNekudotGrid() {
+            const clearBtn = els.grid.querySelector('.clear-nekuda');
+            els.grid.innerHTML = '';
+            els.grid.appendChild(clearBtn);
+
+            NEKUDOT_MAP.forEach(n => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-nekuda';
+                btn.disabled = true;
+                btn.onmousedown = (e) => e.preventDefault(); // CRITICAL: Prevents focus loss
+                btn.onclick = () => editor.applyNekuda(n.char);
+                btn.dataset.char = n.char;
+                btn.innerText = 'א' + n.char; 
+                els.grid.appendChild(btn);
+            });
+        }
+
+        // --- Logic ---
+        window.keyboardInput = (char) => {
+            insertText(char);
+            if(state.isEditing) editor.updateVisualization();
+        };
+
+        window.keyboardBackspace = () => {
+            const start = els.input.selectionStart;
+            const end = els.input.selectionEnd;
+            const text = els.input.value;
+            if (start === end && start > 0) {
+                els.input.value = text.substring(0, start - 1) + text.substring(end);
+                els.input.setSelectionRange(start - 1, start - 1);
+            } else {
+                els.input.value = text.substring(0, start) + text.substring(end);
+                els.input.setSelectionRange(start, start);
+            }
+            historyManager.save();
+            if(state.isEditing) editor.updateVisualization();
+        };
+
+        function insertText(char) {
+            const start = els.input.selectionStart;
+            const end = els.input.selectionEnd;
+            const text = els.input.value;
+            els.input.value = text.substring(0, start) + char + text.substring(end);
+            els.input.setSelectionRange(start + 1, start + 1);
+            historyManager.save();
+        }
+
+        window.actions = {
+            undo: historyManager.undo,
+            redo: historyManager.redo,
+            restoreFocus: () => els.input.focus(),
+            clearAll: () => {
+                if(confirm("Clear All?")) {
+                    els.input.value = '';
+                    editor.stopEditing();
+                    historyManager.save();
+                }
+            },
+            copyToClipboard: () => copyText(els.input.value),
+            copyReverse: () => copyText(els.input.value.split('').reverse().join('')),
+            copyBase: () => copyText(els.input.value.replace(HEBREW_RANGES.nekudot, ''))
+        };
+
+        async function copyText(txt) {
+            try { await navigator.clipboard.writeText(txt); alert("Copied!"); } 
+            catch (e) { alert("Error copying"); }
+        }
+
+        // --- Editor Logic ---
+        window.editor = {
+            startEditing: () => {
+                const text = els.input.value;
+                if (!text) return els.input.focus();
+                
+                state.isEditing = true;
+                
+                // Toggle UI
+                els.btns.start.style.display = 'none';
+                els.btns.stop.style.display = 'inline-flex';
+                ['prev', 'next', 'skip', 'stop'].forEach(k => els.btns[k].disabled = false);
+
+                els.input.focus();
+                
+                // Logic: 
+                // 1. If user has a valid text selection (range), stick to it.
+                // 2. If no selection (selectionStart == selectionEnd), find FIRST Hebrew letter in entire text.
+                
+                const start = els.input.selectionStart;
+                const end = els.input.selectionEnd;
+
+                if (end - start > 0) {
+                    // Selection exists. Just verify it contains a Hebrew letter and we are good.
+                    // We shrink to the first char of selection to be precise
+                    if (HEBREW_RANGES.letters.test(text.substring(start, start+1))) {
+                        els.input.setSelectionRange(start, start+1);
+                    }
+                } else {
+                    // No selection. Start from beginning of text.
+                    let foundIndex = -1;
+                    for (let i = 0; i < text.length; i++) {
+                        if (HEBREW_RANGES.letters.test(text[i])) {
+                            foundIndex = i;
+                            break;
+                        }
+                    }
+
+                    if (foundIndex !== -1) {
+                        els.input.setSelectionRange(foundIndex, foundIndex + 1);
+                    }
+                }
+
+                // Force visualization update
+                editor.updateVisualization();
+            },
+
+            stopEditing: () => {
+                state.isEditing = false;
+                els.btns.start.style.display = 'inline-flex';
+                els.btns.stop.style.display = 'none';
+                ['prev', 'next', 'skip'].forEach(k => els.btns[k].disabled = true);
+                
+                // Disable grid
+                els.grid.querySelectorAll('button').forEach(btn => btn.disabled = true);
+                
+                // Collapse selection to end
+                els.input.setSelectionRange(els.input.selectionEnd, els.input.selectionEnd);
+                els.input.focus();
+            },
+
+            move: (direction) => {
+                // Recover selection if lost
+                if (document.activeElement !== els.input) {
+                    els.input.focus();
+                    els.input.setSelectionRange(state.lastCursorStart, state.lastCursorEnd);
+                }
+
+                const text = els.input.value;
+                let currentPos = els.input.selectionStart; 
+
+                // Logic: Search directionally for the next/prev valid Hebrew Letter
+                if (direction === 1 && els.input.selectionStart !== els.input.selectionEnd) {
+                    currentPos = els.input.selectionStart + 1; 
+                } else if (direction === -1) {
+                    currentPos = els.input.selectionStart - 1; 
+                }
+
+                let found = false;
+                let searchPos = currentPos;
+                let limit = 0;
+
+                while (!found && limit < text.length * 2) {
+                    if (searchPos < 0 || searchPos >= text.length) break;
+                    
+                    if (HEBREW_RANGES.letters.test(text[searchPos])) {
+                        els.input.setSelectionRange(searchPos, searchPos + 1);
+                        editor.updateVisualization();
+                        return;
+                    }
+
+                    searchPos += direction;
+                    limit++;
+                }
+                
+                // If not found, keep focus
+                els.input.focus();
+            },
+
+            skip: () => editor.move(1),
+
+            updateVisualization: () => {
+                const start = els.input.selectionStart;
+                const end = els.input.selectionEnd;
+                
+                // If not exactly one char selected, disable grid
+                if (end - start !== 1) {
+                    editor.setGridEnabled(false);
+                    return;
+                }
+
+                const char = els.input.value.substring(start, end);
+
+                if (HEBREW_RANGES.letters.test(char)) {
+                    editor.setGridEnabled(true);
+                    // Dynamically update button labels
+                    const buttons = els.grid.querySelectorAll('.btn-nekuda:not(.clear-nekuda)');
+                    buttons.forEach(btn => {
+                         btn.innerText = char + btn.dataset.char;
+                    });
+                } else {
+                    editor.setGridEnabled(false);
+                }
+            },
+
+            setGridEnabled: (isEnabled) => {
+                els.grid.querySelectorAll('button').forEach(btn => btn.disabled = !isEnabled);
+            },
+
+            applyNekuda: (nekudaChar) => {
+                els.input.focus();
+                
+                const start = els.input.selectionStart;
+                const end = els.input.selectionEnd;
+                const text = els.input.value;
+
+                if (end - start !== 1) return;
+
+                const baseChar = text.substring(start, end);
+                if (!HEBREW_RANGES.letters.test(baseChar)) return;
+
+                // Insert Nekuda
+                const newText = text.substring(0, end) + nekudaChar + text.substring(end);
+                els.input.value = newText;
+                
+                historyManager.save();
+
+                // Move Past
+                els.input.setSelectionRange(end + 1, end + 1); 
+                editor.move(1); 
+            },
+
+            clearNekudotFromLetter: () => {
+                els.input.focus();
+                const start = els.input.selectionStart;
+                const end = els.input.selectionEnd;
+                if (end - start !== 1) return;
+
+                let text = els.input.value;
+                let lookAhead = end;
+
+                // Remove combining chars after selection
+                while(lookAhead < text.length && HEBREW_RANGES.isNekuda(text[lookAhead])) {
+                    text = text.substring(0, lookAhead) + text.substring(lookAhead + 1);
+                }
+
+                els.input.value = text;
+                els.input.setSelectionRange(start, end);
+                historyManager.save();
+            }
+        };
+
+        init();
+    </script>
+</body>
+</html>
