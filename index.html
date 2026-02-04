@@ -143,6 +143,29 @@
         }
         .help-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; text-align: left; }
 
+        /* What are Nikkudot section */
+        #what-are-nikkudot {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #eee;
+        }
+        #what-are-nikkudot h3 {
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+        #what-are-nikkudot p {
+            line-height: 1.6;
+            margin-bottom: 10px;
+            text-align: justify;
+            direction: ltr;
+        }
+        #what-are-nikkudot p:last-of-type {
+            margin-bottom: 15px;
+        }
+        #what-are-nikkudot a {
+            color: var(--accent);
+        }
+
         /* Helper for english text */
         .ltr { 
             direction: ltr !important;
@@ -172,7 +195,7 @@
     <div class="app-container">
         <header>
             <h1>נִיקוּדוֹן <span>Nikkudon</span></h1>
-            <h2>Input & Edit Hebrew Text and Nikkudot (Vowels)</h2>
+            <h2>Input & Edit Hebrew Text and <a href="#what-are-nikkudot" style="color: #2c3e50; text-decoration: none; border-bottom: 1px dotted #2c3e50;">Nikkudot</a> (Vowels)</h2>
         </header>
 
         <div class="toolbar-section ltr">
@@ -209,7 +232,7 @@
             <textarea id="mainInput" dir="rtl" placeholder="" spellcheck="false" inputmode="none"></textarea>
         </div>
 
-        <div class="keyboard-section">
+        <div class="keyboard-section ltr">
             <div id="keyboardContainer"></div>
         </div>
 
@@ -234,6 +257,23 @@
                 <div>
                     <strong>Stop Editing:</strong> Click <em>Stop</em> when finished adding vowels. You can resume anytime by clicking <em>Start</em> again.
                 </div>
+            </div>
+            
+            <div id="what-are-nikkudot">
+                <h3>What are Nikkudot?</h3>
+                <p>
+                    Nikkudot (also spelled Niqqud or Nekudot) are the diacritical marks used in Hebrew to indicate vowels and other pronunciation features. The Hebrew alphabet consists only of consonants, so nikkudot were developed to help readers pronounce words correctly. These marks appear as dots and dashes positioned above, below, or inside the Hebrew letters.
+                </p>
+                <p>
+                    While modern Hebrew texts (newspapers, novels, street signs) typically omit nikkudot, they are essential for religious texts, poetry, children's books, and language learning materials. There are several systems of nikkudot, with the Tiberian system being the most widely used today. Understanding nikkudot is crucial for proper Hebrew pronunciation and for distinguishing between words that are spelled identically but pronounced differently.
+                </p>
+                <p>
+                    <strong>Learn more about Nikkudot:</strong><br>
+                    • <a href="https://en.wikipedia.org/wiki/Niqqud" target="_blank" rel="noopener">Wikipedia: Niqqud</a><br>
+                    • <a href="https://www.torahtots.com/alefbet/nekudot/nekudot.htm" target="_blank" rel="noopener">Torah Tots: Nekudot Guide</a><br>
+                    • <a href="https://www.chabad.org/library/article_cdo/aid/137290/jewish/The-Nekudos-Vowels.htm" target="_blank" rel="noopener">Chabad: The Nekudos (Vowels)</a><br>
+                    • <a href="https://www.kotzkblog.com/2019/04/222-debate-over-origins-of-hebrew-vowel.html" target="_blank" rel="noopener">Kotzk Blog: Origins of Hebrew Vowel Points</a>
+                </p>
             </div>
         </div>
         <footer class="toolbar-label ltr">
@@ -262,9 +302,10 @@
         ];
 
         const KEYBOARD_LAYOUT = [
+            ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
             ['/', "'", 'ק', 'ר', 'א', 'ט', 'ו', 'ן', 'ם', 'פ', ']', '['],
             ['ש', 'ד', 'ג', 'כ', 'ע', 'י', 'ח', 'ל', 'ך', 'ף', ',', '\\'],
-            ['ז', 'ס', 'ב', 'ה', 'נ', 'מ', 'צ', 'ת', 'ץ', '.']
+            ['ז', 'ס', 'ב', 'ה', 'נ', 'מ', 'צ', 'ת', 'ץ', '.', '!', '?']
         ];
 
         const els = {
@@ -343,16 +384,20 @@
         // --- Rendering ---
         function renderKeyboard() {
             let html = '';
-            KEYBOARD_LAYOUT.forEach(row => {
+            KEYBOARD_LAYOUT.forEach((row, rowIndex) => {
                 html += '<div class="kb-row">';
                 row.forEach(key => {
                     html += `<button class="btn-key" onmousedown="event.preventDefault()" onclick="keyboardInput('${key}')">${key}</button>`;
                 });
+                // Add backspace to the end of the first row (numbers row)
+                if (rowIndex === 0) {
+                    html += `<button class="btn-key backspace" onmousedown="event.preventDefault()" onclick="keyboardBackspace()">⌫</button>`;
+                }
                 html += '</div>';
             });
             html += '<div class="kb-row">';
             html += `<button class="btn-key space" onmousedown="event.preventDefault()" onclick="keyboardInput(' ')">Space</button>`;
-            html += `<button class="btn-key backspace" onmousedown="event.preventDefault()" onclick="keyboardBackspace()">⌫</button>`;
+            html += `<button class="btn-key" onmousedown="event.preventDefault()" onclick="keyboardInput('\\n')">Enter ↵</button>`;
             html += '</div>';
             els.keyboard.innerHTML = html;
         }
@@ -601,5 +646,3 @@
     </script>
 </body>
 </html>
-
-
