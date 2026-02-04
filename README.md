@@ -26,3 +26,4 @@ Click Stop when finished adding vowels. You can resume anytime by clicking Start
 # Contributors
 * Ethan Piliavin
 * Google Gemini 3 Pro
+* Anthropic Claude Sonnet 4.5
