@@ -38,6 +38,7 @@
             width: 100%;
             font-weight: bold;
             font-family: monospace;
+            text-align: right;
         }
         .app-container {
             width: 100%; max-width: 800px;
@@ -178,6 +179,21 @@
             align-items: right;
             text-align: right;
         }
+ 
+        select {
+            border: 1px solid #dcdcdc; background: #fff;
+            color: var(--primary); border-radius: 4px;
+            padding: 8px 12px; cursor: pointer;
+            font-family: var(--font-ui); font-size: 0.9rem; font-weight: 500;
+            transition: all 0.1s ease;
+            min-height: 44px; display: flex; align-items: center; justify-content: center;
+            user-select: none; -webkit-user-select: none;
+        }
+        
+        .driver-popover-description img {
+            max-width: 100%;
+        }
+        
         @media (max-width: 600px) {
             body { padding: 0; background: #fff; }
             .app-container { border-radius: 0; box-shadow: none; border-top: none; }
@@ -197,6 +213,8 @@
             }
         })
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/driver.js@latest/dist/driver.js.iife.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@latest/dist/driver.css"/>
 </head>
 <body>
     <div id="bh">ב"ה</div>
@@ -207,20 +225,32 @@
         </header>
 
         <div class="toolbar-section ltr">
-            <div class="toolbar-label">Global Actions</div>
             <div class="button-group">
-                <button class="btn-action" onmousedown="event.preventDefault()" onclick="actions.undo()">Undo ↩</button>
-                <button class="btn-action" onmousedown="event.preventDefault()" onclick="actions.redo()">Redo ↪</button>
-                <button class="btn-action" onmousedown="event.preventDefault()" onclick="actions.copyToClipboard()">Copy 📋</button>
-                <button class="btn-action" onmousedown="event.preventDefault()" onclick="actions.copyReverse()">Copy Reverse ⇄</button>
-                <button class="btn-action" onmousedown="event.preventDefault()" onclick="actions.copyBase()">Copy Base (No Vowels)</button>
-                <button class="btn-action danger" onmousedown="event.preventDefault()" onclick="actions.clearAll()">Clear All 🗑️</button>
+                <select id="langSelect" onchange="setLang(this.value)">
+                    <option value="en">English</option>
+                    <option value="he">עברית</option>
+                    <option value="fr">Français</option>
+                    <option value="es">Español</option>
+                </select>
+                <button class="btn-action" data-i18n="btnHelp" onclick="driverObj.drive();">❔ Help</button>
+            </div>
+        </div>
+
+        <div class="toolbar-section ltr">
+            <div class="toolbar-label">Global Actions</div>
+            <div id="global-actions" class="button-group">
+                <button class="btn-action" onmousedown="event.preventDefault()" onclick="actions.undo()" title="Undo the last action.">Undo ↩</button>
+                <button class="btn-action" onmousedown="event.preventDefault()" onclick="actions.redo()" title="Redo the last action (after undo).">Redo ↪</button>
+                <button class="btn-action" onmousedown="event.preventDefault()" onclick="actions.copyToClipboard()" title="Copy the text with nikkudot to the system clipboard.">Copy 📋</button>
+                <button class="btn-action" onmousedown="event.preventDefault()" onclick="actions.copyReverse()" title="Reverse the order and copy the text with nikkudot to the system clipboard.">Copy Reverse ⇄</button>
+                <button class="btn-action" onmousedown="event.preventDefault()" onclick="actions.copyBase()" title="Copy the text without any nikkudot.">Copy Base (No Vowels)</button>
+                <button class="btn-action danger" onmousedown="event.preventDefault()" onclick="actions.clearAll()" title="Clear all text and nikkudot.">Clear All 🗑️</button>
             </div>
         </div>
 
         <div class="toolbar-section ltr">
             <div class="toolbar-label">Nikkudot Editor: Letter Navigation</div>
-            <div class="button-group">
+            <div id="letter-navigation" class="button-group">
                 <button class="btn-nav" id="btnStart" onmousedown="event.preventDefault()" onclick="editor.startEditing()">Start / Edit</button>
                 <button class="btn-nav" id="btnPrev" onmousedown="event.preventDefault()" onclick="editor.move(-1)" disabled>&lt; Prev</button>
                 <button class="btn-nav" id="btnNext" onmousedown="event.preventDefault()" onclick="editor.move(1)" disabled>Next &gt;</button>
@@ -231,7 +261,7 @@
 
         <div class="toolbar-section">
             <div class="toolbar-label ltr">Nekudot Selector</div>
-            <div class="nekudot-grid" id="nekudotGrid">
+            <div class="nekudot-grid rtl" id="nekudotGrid">
                 <button class="btn-nekuda clear-nekuda" onmousedown="event.preventDefault()" onclick="editor.clearNekudotFromLetter()">Clear Letter</button>
             </div>
         </div>
@@ -649,6 +679,21 @@
                 historyManager.save();
             }
         };
+
+        const driver = window.driver.js.driver;
+        const driverObj = driver({
+          showProgress: true,
+          showButtons: ['next', 'previous'],
+          steps: [
+            { popover: { title: 'Using Nukkidon', description: 'Let\'s take a quick tour and learn how to use this program.' } },
+            { element: '#mainInput', popover: { title: 'Input your text', description: 'Input the text that needs nikkudot. You can paste the text directly into the box', side: "left", align: 'start' }},
+            { element: '#keyboardContainer', popover: { title: 'On Screen Keyboard', description: 'You can also use the handy on screen keyboard to type your text.<br><img src="type-keyboard.gif">', side: "left", align: 'start' }},
+            { element: '#btnStart', popover: { title: 'Start the Editor', description: 'Start the Nikkudot editor.  <br><img src="add-nikkudot.gif">', side: "left", align: 'start' }},
+            { element: '#nekudotGrid', popover: { title: 'Add Nikkudot', description: 'Click to add nikkudot. <br><img src="add-nikkudot.gif">', side: "left", align: 'start' }},
+            { element: '#letter-navigation', popover: { title: 'Navigate the Text', description: 'Cycle through the letters to skip or change the nikkudot throughout your text. <br><img src="skip-letters.gif">', side: "left", align: 'start' }},
+            { element: '#global-actions', popover: { title: 'Copy to Clipboard', description: 'Once your nikkudot are correct, copy the text to your clipboard and paste into your final destination! <br><img src="copy-text.gif"', side: "left", align: 'start' }},
+          ]
+        });
 
         init();
     </script>
