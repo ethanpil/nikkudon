@@ -216,6 +216,7 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/driver.js@latest/dist/driver.js.iife.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@latest/dist/driver.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/ultimate-i18n-js@0.0.3/lib/index.min.js"></script>
 </head>
 <body>
     <div id="bh">ב"ה</div>
@@ -227,11 +228,11 @@
 
         <div class="toolbar-section ltr">
             <div class="button-group">
-                <select id="langSelect" onchange="setLang(this.value)">
+                <select id="langSelect" onchange="UltimateI18n.set(this.value)">
                     <option value="en">English</option>
                     <option value="he">עברית</option>
-                    <option value="fr">Français</option>
-                    <option value="es">Español</option>
+                   <!-- <option value="fr">Français</option>
+                    <option value="es">Español</option> -->
                 </select>
                 <button class="btn-action" data-i18n="btnHelp" onclick="driverObj.drive();">❔ Help</button>
             </div>
@@ -240,30 +241,30 @@
         <div class="toolbar-section ltr">
             <div class="toolbar-label">Global Actions</div>
             <div id="global-actions" class="button-group">
-                <button class="btn-action" onmousedown="event.preventDefault()" onclick="actions.undo()" title="Undo the last action.">Undo ↩</button>
-                <button class="btn-action" onmousedown="event.preventDefault()" onclick="actions.redo()" title="Redo the last action (after undo).">Redo ↪</button>
-                <button class="btn-action" onmousedown="event.preventDefault()" onclick="actions.copyToClipboard()" title="Copy the text with nikkudot to the system clipboard.">Copy 📋</button>
-                <button class="btn-action" onmousedown="event.preventDefault()" onclick="actions.copyReverse()" title="Reverse the order and copy the text with nikkudot to the system clipboard.">Copy Reverse ⇄</button>
-                <button class="btn-action" onmousedown="event.preventDefault()" onclick="actions.copyBase()" title="Copy the text without any nikkudot.">Copy Base (No Vowels)</button>
-                <button class="btn-action danger" onmousedown="event.preventDefault()" onclick="actions.clearAll()" title="Clear all text and nikkudot.">Clear All 🗑️</button>
+                <button class="btn-action" onmousedown="event.preventDefault()" onclick="actions.undo()" title="Undo the last action." i18n-he="בטל ↩">Undo ↩</button>
+                <button class="btn-action" onmousedown="event.preventDefault()" onclick="actions.redo()" title="Redo the last action (after undo)." i18n-he="↪ בצע שוב">Redo ↪</button>
+                <button class="btn-action" onmousedown="event.preventDefault()" onclick="actions.copyToClipboard()" title="Copy the text with nikkudot to the system clipboard." i18n-he="העתק 📋">Copy 📋</button>
+                <button class="btn-action" onmousedown="event.preventDefault()" onclick="actions.copyReverse()" title="Reverse the order and copy the text with nikkudot to the system clipboard." i18n-he="העתק הפוך ⇄">Copy Reverse ⇄</button>
+                <button class="btn-action" onmousedown="event.preventDefault()" onclick="actions.copyBase()" title="Copy the text without any nikkudot." i18n-he="העתק בסיס (ללא תנועות)">Copy Base (No Vowels)</button>
+                <button class="btn-action danger" onmousedown="event.preventDefault()" onclick="actions.clearAll()" title="Clear all text and nikkudot." i18n-he="נקה הכל 🗑️">Clear All 🗑️</button>
             </div>
         </div>
 
         <div class="toolbar-section ltr">
             <div class="toolbar-label">Nikkudot Editor: Letter Navigation</div>
             <div id="letter-navigation" class="button-group">
-                <button class="btn-nav" id="btnStart" onmousedown="event.preventDefault()" onclick="editor.startEditing()">Start / Edit</button>
-                <button class="btn-nav" id="btnPrev" onmousedown="event.preventDefault()" onclick="editor.move(-1)" disabled>&lt; Prev</button>
-                <button class="btn-nav" id="btnNext" onmousedown="event.preventDefault()" onclick="editor.move(1)" disabled>Next &gt;</button>
-                <button class="btn-nav" id="btnSkip" onmousedown="event.preventDefault()" onclick="editor.skip()" disabled>Skip</button>
-                <button class="btn-nav stop" id="btnStop" onmousedown="event.preventDefault()" onclick="editor.stopEditing()" disabled>Stop ■</button>
+                <button class="btn-nav" id="btnStart" onmousedown="event.preventDefault()" onclick="editor.startEditing()" i18n-he="התחל / ערוך">Start / Edit</button>
+                <button class="btn-nav" id="btnPrev" onmousedown="event.preventDefault()" onclick="editor.move(-1)" i18n-he="< הקודם" disabled>&lt; Prev</button>
+                <button class="btn-nav" id="btnNext" onmousedown="event.preventDefault()" onclick="editor.move(1)" i18n-he="הבא >" disabled>Next &gt;</button>
+                <button class="btn-nav" id="btnSkip" onmousedown="event.preventDefault()" onclick="editor.skip()" i18n-he="דלג" disabled>Skip</button>
+                <button class="btn-nav stop" id="btnStop" onmousedown="event.preventDefault()" onclick="editor.stopEditing()" i18n-he="עצור ■" disabled>Stop ■</button>
             </div>
         </div>
 
         <div class="toolbar-section">
             <div class="toolbar-label ltr">Nekudot Selector</div>
             <div class="nekudot-grid rtl" id="nekudotGrid">
-                <button class="btn-nekuda clear-nekuda" onmousedown="event.preventDefault()" onclick="editor.clearNekudotFromLetter()">Clear Letter</button>
+                <button class="btn-nekuda clear-nekuda" onmousedown="event.preventDefault()" onclick="editor.clearNekudotFromLetter()" i18n-he="נקה אות">Clear Letter</button>
             </div>
         </div>
 
@@ -695,6 +696,10 @@
             { element: '#global-actions', popover: { title: 'Copy to Clipboard', description: 'Once your nikkudot are correct, copy the text to your clipboard and paste into your final destination! <br><img src="copy-text.gif"', side: "left", align: 'start' }},
           ]
         });
+        
+        function setLang(lang) {
+            UltimateI18n.set(lang);
+        }
 
         init();
     </script>
