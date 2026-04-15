@@ -287,7 +287,7 @@
                 state.isEditing = true;
 
                 // Toggle UI
-                document.getElementById('keyboardPanel').classList.remove('open'); //Close keyboard if open
+                document.getElementById('keyboardPanel').removeAttribute('open'); //Close keyboard if open
                 els.appContainer.classList.add('editing');
                 els.btnToggleEdit.classList.add('active');
                 els.btnToggleEdit.textContent = document.documentElement.lang === 'he' ? 'עצור עריכה' : 'Stop Editing';
