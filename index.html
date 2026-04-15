@@ -1,12 +1,256 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="An online virtual Hebrew language keyboard with Nikkudot (vowels) support.">
-    <title>Nikuddon | Input & Edit Hebrew Text and Nikkudot (Vowels)</title>
+    <title>Nikkudon | Input & Edit Hebrew Text and Nikkudot (Vowels)</title>
     <link rel="icon" href="favicon.ico" />
     <link rel="stylesheet" href="app/styles.css">
+    <link rel="stylesheet" href="lib/driver.css"/>
+    <script src="lib/driver.js.iife.js"></script>
+    <script src="lib/ultimate-i18n-js.min.js"></script>
+</head>
+<body>
+
+    <!-- SVG Icon Sprites -->
+    <svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+        <symbol id="icon-undo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 7v6h6"/><path d="M3 13a9 9 0 0 1 15.36-6.36L21 9"/>
+        </symbol>
+        <symbol id="icon-redo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 7v6h-6"/><path d="M21 13a9 9 0 0 0-15.36-6.36L3 9"/>
+        </symbol>
+        <symbol id="icon-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+        </symbol>
+        <symbol id="icon-reverse" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M7 16l-4-4 4-4"/><path d="M17 8l4 4-4 4"/><path d="M3 12h18"/>
+        </symbol>
+        <symbol id="icon-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+        </symbol>
+        <symbol id="icon-help" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+        </symbol>
+        <symbol id="icon-keyboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M6 12h.01M10 12h.01M14 12h.01M18 12h.01M8 16h8"/>
+        </symbol>
+        <symbol id="icon-chevron-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"/>
+        </symbol>
+        <symbol id="icon-chevron-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"/>
+        </symbol>
+        <symbol id="icon-chevron-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 6 15 12 9 18"/>
+        </symbol>
+        <symbol id="icon-skip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/>
+        </symbol>
+        <symbol id="icon-skip-fwd" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="11 17 6 12 11 7"/><polyline points="18 17 13 12 18 7"/>
+        </symbol>
+        <symbol id="icon-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </symbol>
+        <symbol id="icon-external" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+        </symbol>
+        <symbol id="icon-no-vowels" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="M3 9h18"/>
+        </symbol>
+    </svg>
+
+    <div id="bh">ב"ה</div>
+
+    <div class="app-container" id="appContainer">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="app-title">
+                <span class="title-hebrew">נִיקוּדוֹן</span>
+                <span class="title-latin">Nikkudon</span>
+            </div>
+            <div class="header-actions">
+                <select id="langSelect" onchange="onLanguageChange(this.value)">
+                    <option value="en">English</option>
+                    <option value="he">עברית</option>
+                </select>
+                <button class="btn-help" onclick="openHelp()" aria-label="Help" title="Help">
+                    <svg><use href="#icon-help"/></svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Action Bar -->
+        <div class="action-bar" id="global-actions">
+            <div class="action-group">
+                <button class="btn-action" onmousedown="event.preventDefault()" onclick="actions.undo()" title="Undo" aria-label="Undo">
+                    <svg><use href="#icon-undo"/></svg>
+                    <span class="btn-label" i18n-he="בטל">Undo</span>
+                </button>
+                <button class="btn-action" onmousedown="event.preventDefault()" onclick="actions.redo()" title="Redo" aria-label="Redo">
+                    <svg><use href="#icon-redo"/></svg>
+                    <span class="btn-label" i18n-he="בצע שוב">Redo</span>
+                </button>
+            </div>
+            <div class="action-divider"></div>
+            <div class="action-group">
+                <button class="btn-action" onmousedown="event.preventDefault()" onclick="actions.copyToClipboard()" title="Copy text with vowels" aria-label="Copy text with vowels">
+                    <svg><use href="#icon-copy"/></svg>
+                    <span class="btn-label" i18n-he="העתק">Copy</span>
+                </button>
+                <button class="btn-action" onmousedown="event.preventDefault()" onclick="actions.copyReverse()" title="Copy reversed text" aria-label="Copy reversed text">
+                    <svg><use href="#icon-reverse"/></svg>
+                    <span class="btn-label" i18n-he="העתק הפוך">Reverse</span>
+                </button>
+                <button class="btn-action" onmousedown="event.preventDefault()" onclick="actions.copyBase()" title="Copy text without vowels" aria-label="Copy text without vowels">
+                    <svg><use href="#icon-no-vowels"/></svg>
+                    <span class="btn-label" i18n-he="ללא תנועות">No Vowels</span>
+                </button>
+            </div>
+            <div class="action-divider"></div>
+            <div class="action-group">
+                <button class="btn-action danger" id="btnClearAll" onmousedown="event.preventDefault()" onclick="actions.clearAll()" title="Clear all text" aria-label="Clear all text">
+                    <svg><use href="#icon-trash"/></svg>
+                    <span class="btn-label" i18n-he="נקה">Clear</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content: Two-column on desktop -->
+        <div class="main-content">
+            <!-- Left: Editor -->
+            <div class="editor-column">
+                <textarea id="mainInput" class="editor-textarea" dir="rtl" placeholder="" spellcheck="false" inputmode="none"></textarea>
+                <div class="editor-status" aria-live="polite">
+                    <span class="status-dot"></span>
+                    <span class="status-text" id="statusText" i18n-he="מוכן">Ready</span>
+                </div>
+                <!-- On-Screen Keyboard -->
+                <details class="keyboard-section" id="keyboardPanel">
+                    <summary class="keyboard-toggle">
+                        <svg><use href="#icon-keyboard"/></svg>
+                        <span i18n-he="מקלדת">Keyboard</span>
+                        <svg class="chevron"><use href="#icon-chevron-down"/></svg>
+                    </summary>
+                    <div class="keyboard-container" id="keyboardContainer" dir="ltr"></div>
+                </details>
+            </div>
+
+            <!-- Right: Tools -->
+            <div class="tools-panel">
+                <!-- Editor Controls -->
+                <div class="editor-controls">
+                    <span class="tools-section-label" i18n-he="עורך ניקוד">Nikkudot Editor</span>
+                    <button class="btn-primary" id="btnToggleEdit" onmousedown="event.preventDefault()" onclick="toggleEditing()">Start Editing</button>
+                    <div class="nav-row">
+                        <button class="btn-nav" id="btnNext" onmousedown="event.preventDefault()" onclick="editor.move(1)" disabled aria-label="Next letter" title="Next letter (←)">
+                            <svg><use href="#icon-chevron-left"/></svg>
+                            <span i18n-he="הבא">Next</span>
+                        </button>
+                        <button class="btn-nav" id="btnSkip" onmousedown="event.preventDefault()" onclick="editor.skip()" disabled aria-label="Skip letter" title="Skip letter">
+                            <svg><use href="#icon-skip-fwd"/></svg>
+                            <span i18n-he="דלג">Skip</span>
+                        </button>
+                        <button class="btn-nav" id="btnPrev" onmousedown="event.preventDefault()" onclick="editor.move(-1)" disabled aria-label="Previous letter" title="Previous letter (→)">
+                            <span i18n-he="הקודם">Prev</span>
+                            <svg><use href="#icon-chevron-right"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Nekudot Grid -->
+                <div class="nekudot-section">
+                    <div class="nekudot-header">
+                        <span class="tools-section-label" i18n-he="בחירת ניקוד">Nekudot</span>
+                        <span class="current-letter-display" id="currentLetter">--</span>
+                    </div>
+                    <div class="nekudot-grid" id="nekudotGrid"></div>
+                    <button class="btn-clear-letter" id="btnClearLetter" onmousedown="event.preventDefault()" onclick="editor.clearNekudotFromLetter()" disabled i18n-he="נקה אות">Clear Letter</button>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            &copy; 2026 <a href="https://piliavin.com" target="_blank" rel="noopener">Ethan Piliavin</a>
+        </footer>
+    </div>
+
+    <!-- Help Side Panel -->
+    <div class="help-overlay" id="helpOverlay" onclick="closeHelp()"></div>
+    <div class="help-panel" id="helpPanel">
+        <div class="help-panel-header">
+            <h3 i18n-he="עזרה">Help</h3>
+            <div style="display:flex; gap:8px; align-items:center;">
+                <button class="btn-tour" data-i18n="btnTour" onclick="closeHelp(); driverObj.drive();" i18n-he="סיור מודרך">Guided Tour</button>
+                <button class="btn-close-help" onclick="closeHelp()" aria-label="Close help">
+                    <svg><use href="#icon-x"/></svg>
+                </button>
+            </div>
+        </div>
+        <div class="help-content">
+            <h4 i18n-he="מדריך התחלה מהירה">Quick Start</h4>
+            <div class="help-steps">
+                <div class="help-step">
+                    <span class="help-step-num">1</span>
+                    <span class="help-step-text"><strong i18n-he="הקלד טקסט עברי">Type Hebrew text</strong> — <span i18n-he="השתמש במקלדת או הקלד על המקלדת שעל המסך. הטקסט זורם מימין לשמאל אוטומטית.">Use your keyboard or tap the on-screen keyboard. Text flows right-to-left automatically.</span></span>
+                </div>
+                <div class="help-step">
+                    <span class="help-step-num">2</span>
+                    <span class="help-step-text"><strong i18n-he="הוסף תנועות">Add vowels</strong> — <span i18n-he="לחץ על 'התחל עריכה' כדי להתחיל. האות הראשונה תיבחר. לחץ על תנועה כדי להוסיף אותה.">Click "Start Editing" to begin. The first Hebrew letter will be selected. Click any vowel to add it.</span></span>
+                </div>
+                <div class="help-step">
+                    <span class="help-step-num">3</span>
+                    <span class="help-step-text"><strong i18n-he="נווט בין אותיות">Navigate</strong> — <span i18n-he="השתמש בכפתורי 'הבא' ו'הקודם' או מקשי החצים (← →) כדי לעבור בין אותיות. לחץ על 'דלג' כדי לעבור הלאה ללא הוספת תנועות.">Use Next/Prev buttons or arrow keys to move between letters. Use Skip to advance without adding vowels.</span></span>
+                </div>
+                <div class="help-step">
+                    <span class="help-step-num">4</span>
+                    <span class="help-step-text"><strong i18n-he="ערוך אותיות ספציפיות">Edit specific letters</strong> — <span i18n-he="סמן אות בטקסט, ואז לחץ 'התחל עריכה' כדי לערוך מאותו מקום. השתמש ב'נקה אות' כדי להסיר תנועות.">Select any letter in the text, then click "Start Editing" to edit from that position. Use "Clear Letter" to remove vowels.</span></span>
+                </div>
+                <div class="help-step">
+                    <span class="help-step-num">5</span>
+                    <span class="help-step-text"><strong i18n-he="העתק">Copy</strong> — <span i18n-he="'העתק' מייצא את הטקסט המלא עם תנועות. 'ללא תנועות' מסיר את כל התנועות. 'העתק הפוך' הופך את סדר המחרוזת.">Copy exports full text with vowels. No Vowels strips all vowels. Reverse flips the string order.</span></span>
+                </div>
+            </div>
+
+            <hr class="help-divider">
+
+            <h4 i18n-he="מה הן ניקודות?">What are Nikkudot?</h4>
+            <p i18n-he="ניקודות (גם מאוית ניקוד או נקודות) הן הסימנים הדיאקריטיים המשמשים בעברית לציון תנועות ותכונות הגייה. האלף-בית העברי מורכב רק מעיצורים, ולכן פותחו ניקודות כדי לסייע לקוראים להגות מילים נכון.">Nikkudot (also spelled Niqqud or Nekudot) are the diacritical marks used in Hebrew to indicate vowels and pronunciation. The Hebrew alphabet consists only of consonants, so nikkudot help readers pronounce words correctly.</p>
+            <p i18n-he="בעוד שטקסטים עבריים מודרניים בדרך כלל משמיטים ניקודות, הן חיוניות לטקסטים דתיים, שירה, ספרי ילדים וחומרי לימוד שפה.">While modern Hebrew texts typically omit nikkudot, they are essential for religious texts, poetry, children's books, and language learning materials.</p>
+
+            <hr class="help-divider">
+
+            <h4 i18n-he="קישורים">Learn More</h4>
+            <div class="help-links">
+                <a href="https://en.wikipedia.org/wiki/Niqqud" target="_blank" rel="noopener">
+                    <svg><use href="#icon-external"/></svg>
+                    Wikipedia: Niqqud
+                </a>
+                <a href="https://www.torahtots.com/alefbet/nekudot/nekudot.htm" target="_blank" rel="noopener">
+                    <svg><use href="#icon-external"/></svg>
+                    Torah Tots: Nekudot Guide
+                </a>
+                <a href="https://www.chabad.org/library/article_cdo/aid/137290/jewish/The-Nekudos-Vowels.htm" target="_blank" rel="noopener">
+                    <svg><use href="#icon-external"/></svg>
+                    Chabad: The Nekudos (Vowels)
+                </a>
+                <a href="https://www.kotzkblog.com/2019/04/222-debate-over-origins-of-hebrew-vowel.html" target="_blank" rel="noopener">
+                    <svg><use href="#icon-external"/></svg>
+                    Kotzk Blog: Origins of Hebrew Vowel Points
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script src="app/app.js"></script>
+    <script src="app/driver-tour.js"></script>
     <script>
         !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group identify setPersonProperties setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags resetGroups onFeatureFlags addFeatureFlagsHandler onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
         posthog.init('phc_btOpvxVjQJeLYEIPTyrdFy3wfL8oUixuoFNPyCCUNDc', {
@@ -15,119 +259,7 @@
             session_recording: {
                 maskAllInputs: false
             }
-        })
+        });
     </script>
-    <script src="lib/driver.js.iife.js"></script>
-    <link rel="stylesheet" href="lib/driver.css"/>
-    <script src="lib/ultimate-i18n-js.min.js"></script>
-</head>
-<body>
-    <div id="bh">ב"ה</div>
-    <div class="app-container">
-        <header>
-            <h1>נִיקוּדוֹן <span>Nikkudon</span></h1>
-            <h2>Input & Edit Hebrew Text and <a href="#what-are-nikkudot" style="color: #2c3e50; text-decoration: none; border-bottom: 1px dotted #2c3e50;">Nikkudot</a> (Vowels)</h2>
-        </header>
-
-        <div class="toolbar-section ltr">
-            <div class="button-group">
-                <select id="langSelect" onchange="UltimateI18n.set(this.value)">
-                    <option value="en">English</option>
-                    <option value="he">עברית</option>
-                   <!-- <option value="fr">Français</option>
-                    <option value="es">Español</option> -->
-                </select>
-                <button class="btn-action" data-i18n="btnHelp" onclick="driverObj.drive();">❔ Help</button>
-            </div>
-        </div>
-
-        <div class="toolbar-section ltr">
-            <div class="toolbar-label">Global Actions</div>
-            <div id="global-actions" class="button-group">
-                <button class="btn-action" onmousedown="event.preventDefault()" onclick="actions.undo()" title="Undo the last action." i18n-he="בטל ↩">Undo ↩</button>
-                <button class="btn-action" onmousedown="event.preventDefault()" onclick="actions.redo()" title="Redo the last action (after undo)." i18n-he="↪ בצע שוב">Redo ↪</button>
-                <button class="btn-action" onmousedown="event.preventDefault()" onclick="actions.copyToClipboard()" title="Copy the text with nikkudot to the system clipboard." i18n-he="העתק 📋">Copy 📋</button>
-                <button class="btn-action" onmousedown="event.preventDefault()" onclick="actions.copyReverse()" title="Reverse the order and copy the text with nikkudot to the system clipboard." i18n-he="העתק הפוך ⇄">Copy Reverse ⇄</button>
-                <button class="btn-action" onmousedown="event.preventDefault()" onclick="actions.copyBase()" title="Copy the text without any nikkudot." i18n-he="העתק בסיס (ללא תנועות)">Copy Base (No Vowels)</button>
-                <button class="btn-action danger" onmousedown="event.preventDefault()" onclick="actions.clearAll()" title="Clear all text and nikkudot." i18n-he="נקה הכל 🗑️">Clear All 🗑️</button>
-            </div>
-        </div>
-
-        <div class="toolbar-section ltr">
-            <div class="toolbar-label">Nikkudot Editor: Letter Navigation</div>
-            <div id="letter-navigation" class="button-group">
-                <button class="btn-nav" id="btnStart" onmousedown="event.preventDefault()" onclick="editor.startEditing()" i18n-he="התחל / ערוך">Start / Edit</button>
-                <button class="btn-nav" id="btnPrev" onmousedown="event.preventDefault()" onclick="editor.move(-1)" i18n-he="< הקודם" disabled>&lt; Prev</button>
-                <button class="btn-nav" id="btnNext" onmousedown="event.preventDefault()" onclick="editor.move(1)" i18n-he="הבא >" disabled>Next &gt;</button>
-                <button class="btn-nav" id="btnSkip" onmousedown="event.preventDefault()" onclick="editor.skip()" i18n-he="דלג" disabled>Skip</button>
-                <button class="btn-nav stop" id="btnStop" onmousedown="event.preventDefault()" onclick="editor.stopEditing()" i18n-he="עצור ■" disabled>Stop ■</button>
-            </div>
-        </div>
-
-        <div class="toolbar-section">
-            <div class="toolbar-label ltr">Nekudot Selector</div>
-            <div class="nekudot-grid rtl" id="nekudotGrid">
-                <button class="btn-nekuda clear-nekuda" onmousedown="event.preventDefault()" onclick="editor.clearNekudotFromLetter()" i18n-he="נקה אות">Clear Letter</button>
-            </div>
-        </div>
-
-        <div class="input-wrapper">
-            <textarea id="mainInput" dir="rtl" placeholder="" spellcheck="false" inputmode="none"></textarea>
-        </div>
-
-        <div class="keyboard-section ltr">
-            <div id="keyboardContainer"></div>
-        </div>
-
-        <div class="help-section ltr">
-            <h3>Quick Start Guide</h3>
-            <div class="help-grid">
-                <div>
-                    <strong>Type Hebrew Text:</strong> Use your keyboard or tap the on-screen keyboard. Text flows right-to-left automatically.
-                </div>
-                <div>
-                    <strong>Add Vowels (Nekudot):</strong> Click <em>Start</em> to begin editing Nikuddot. The first Hebrew letter will be highlighted. Click any vowel symbol to add it to the selected letter.
-                </div>
-                <div>
-                    <strong>Navigate Between Letters:</strong> Use <em>Next</em> and <em>Prev</em> buttons or arrow keys (← →) to move between Hebrew letters. Click <em>Skip</em> to move forward without adding vowels.
-                </div>
-                <div>
-                    <strong>Edit Specific Letters:</strong> Highlight any letter in the text area, then click <em>Start</em> to edit from that position. Use <em>Clear Letter</em> to remove vowels from the current letter.
-                </div>
-                <div>
-                    <strong>Copy Options:</strong> <em>Copy</em> exports the full text with vowels. <em>Copy Base</em> removes all vowels. <em>Copy Reverse</em> reverses the string order.
-                </div>
-                <div>
-                    <strong>Stop Editing:</strong> Click <em>Stop</em> when finished adding vowels. You can resume anytime by clicking <em>Start</em> again.
-                </div>
-            </div>
-            
-            <div id="what-are-nikkudot">
-                <h3>What are Nikkudot?</h3>
-                <p>
-                    Nikkudot (also spelled Niqqud or Nekudot) are the diacritical marks used in Hebrew to indicate vowels and other pronunciation features. The Hebrew alphabet consists only of consonants, so nikkudot were developed to help readers pronounce words correctly. These marks appear as dots and dashes positioned above, below, or inside the Hebrew letters.
-                </p>
-                <p>
-                    While modern Hebrew texts (newspapers, novels, street signs) typically omit nikkudot, they are essential for religious texts, poetry, children's books, and language learning materials. There are several systems of nikkudot, with the Tiberian system being the most widely used today. Understanding nikkudot is crucial for proper Hebrew pronunciation and for distinguishing between words that are spelled identically but pronounced differently.
-                </p>
-                <p>
-                    <strong>Learn more about Nikkudot:</strong><br>
-                    • <a href="https://en.wikipedia.org/wiki/Niqqud" target="_blank" rel="noopener">Wikipedia: Niqqud</a><br>
-                    • <a href="https://www.torahtots.com/alefbet/nekudot/nekudot.htm" target="_blank" rel="noopener">Torah Tots: Nekudot Guide</a><br>
-                    • <a href="https://www.chabad.org/library/article_cdo/aid/137290/jewish/The-Nekudos-Vowels.htm" target="_blank" rel="noopener">Chabad: The Nekudos (Vowels)</a><br>
-                    • <a href="https://www.kotzkblog.com/2019/04/222-debate-over-origins-of-hebrew-vowel.html" target="_blank" rel="noopener">Kotzk Blog: Origins of Hebrew Vowel Points</a>
-                </p>
-            </div>
-        </div>
-        <footer class="toolbar-label ltr">
-            <hr>
-            &copy; 2026 Ethan Piliavin
-        </footer>
-    </div>
-
-    <script src="app/app.js"></script>
-    <script src="app/driver-tour.js"></script>
 </body>
 </html>
-
-

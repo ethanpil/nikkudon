@@ -27,12 +27,17 @@
             input: document.getElementById('mainInput'),
             grid: document.getElementById('nekudotGrid'),
             keyboard: document.getElementById('keyboardContainer'),
+            appContainer: document.getElementById('appContainer'),
+            btnToggleEdit: document.getElementById('btnToggleEdit'),
+            btnClearLetter: document.getElementById('btnClearLetter'),
+            currentLetter: document.getElementById('currentLetter'),
+            statusText: document.getElementById('statusText'),
+            toast: document.getElementById('toast'),
+            keyboardPanel: document.getElementById('keyboardPanel'),
             btns: {
-                start: document.getElementById('btnStart'),
                 prev: document.getElementById('btnPrev'),
                 next: document.getElementById('btnNext'),
-                skip: document.getElementById('btnSkip'),
-                stop: document.getElementById('btnStop')
+                skip: document.getElementById('btnSkip')
             }
         };
 
@@ -41,8 +46,54 @@
             historyIndex: -1,
             isEditing: false,
             lastCursorStart: 0,
-            lastCursorEnd: 0
+            lastCursorEnd: 0,
+            clearConfirmTimeout: null
         };
+
+        // --- Toast ---
+        let toastTimeout = null;
+        function showToast(msg) {
+            clearTimeout(toastTimeout);
+            els.toast.classList.remove('show');
+            els.toast.textContent = msg;
+            void els.toast.offsetWidth; // Force reflow for transition
+            els.toast.classList.add('show');
+            toastTimeout = setTimeout(() => els.toast.classList.remove('show'), 2000);
+        }
+
+        // --- Help Panel ---
+        function openHelp() {
+            document.getElementById('helpOverlay').classList.add('open');
+            document.getElementById('helpPanel').classList.add('open');
+        }
+        function closeHelp() {
+            document.getElementById('helpOverlay').classList.remove('open');
+            document.getElementById('helpPanel').classList.remove('open');
+        }
+
+        // --- Language Switch ---
+        function onLanguageChange(lang) {
+            // Save state before i18n resets DOM
+            const cursorStart = els.input.selectionStart;
+            const cursorEnd = els.input.selectionEnd;
+            const wasEditing = state.isEditing;
+
+            UltimateI18n.set(lang);
+            document.documentElement.dir = lang === 'he' ? 'rtl' : 'ltr';
+            document.documentElement.lang = lang;
+
+            // Restore btnToggleEdit text (i18n won't touch it since we removed i18n-he from it)
+            els.btnToggleEdit.textContent = wasEditing
+                ? (lang === 'he' ? 'עצור עריכה' : 'Stop Editing')
+                : (lang === 'he' ? 'התחל עריכה' : 'Start Editing');
+
+            // Restore cursor and editing state
+            els.input.setSelectionRange(cursorStart, cursorEnd);
+            if (wasEditing) {
+                els.input.focus();
+                editor.updateVisualization();
+            }
+        }
 
         // --- History Manager ---
         const historyManager = {
@@ -88,12 +139,19 @@
                 });
             });
 
-            // Arrow keys for navigation in edit mode
+            // Arrow keys for navigation in edit mode + Escape to stop
             els.input.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && state.isEditing) {
+                    e.preventDefault();
+                    editor.stopEditing();
+                    return;
+                }
                 if (!state.isEditing) return;
                 if (e.key === 'ArrowRight') { e.preventDefault(); editor.move(-1); }
                 else if (e.key === 'ArrowLeft') { e.preventDefault(); editor.move(1); }
             });
+
+            // Keyboard panel starts closed (user opens as needed)
         }
 
         // --- Rendering ---
@@ -102,36 +160,43 @@
             KEYBOARD_LAYOUT.forEach((row, rowIndex) => {
                 html += '<div class="kb-row">';
                 row.forEach(key => {
-                    html += `<button class="btn-key" onmousedown="event.preventDefault()" onclick="keyboardInput('${key}')">${key}</button>`;
+                    html += `<button class="btn-key" onmousedown="event.preventDefault()" onclick="keyboardInput('${key.replace(/'/g, "\\'").replace(/\\/g, "\\\\")}')">${key}</button>`;
                 });
-                // Add backspace to the end of the first row (numbers row)
                 if (rowIndex === 0) {
-                    html += `<button class="btn-key backspace" onmousedown="event.preventDefault()" onclick="keyboardBackspace()">⌫</button>`;
+                    html += `<button class="btn-key backspace" onmousedown="event.preventDefault()" onclick="keyboardBackspace()" aria-label="Backspace">&#x232B;</button>`;
                 }
                 html += '</div>';
             });
             html += '<div class="kb-row">';
-            html += `<button class="btn-key space" onmousedown="event.preventDefault()" onclick="keyboardInput(' ')">Space</button>`;
-            html += `<button class="btn-key" onmousedown="event.preventDefault()" onclick="keyboardInput('\\n')">Enter ↵</button>`;
+            html += `<button class="btn-key space" onmousedown="event.preventDefault()" onclick="keyboardInput(' ')" i18n-he="רווח">Space</button>`;
+            html += `<button class="btn-key enter-key" onmousedown="event.preventDefault()" onclick="keyboardInput('\\n')" aria-label="Enter">&#x21B5;</button>`;
             html += '</div>';
             els.keyboard.innerHTML = html;
         }
 
         function renderNekudotGrid() {
-            const clearBtn = els.grid.querySelector('.clear-nekuda');
             els.grid.innerHTML = '';
-            els.grid.appendChild(clearBtn);
 
             NEKUDOT_MAP.forEach(n => {
                 const btn = document.createElement('button');
                 btn.className = 'btn-nekuda';
                 btn.disabled = true;
-                btn.onmousedown = (e) => e.preventDefault(); // CRITICAL: Prevents focus loss
+                btn.onmousedown = (e) => e.preventDefault();
                 btn.onclick = () => editor.applyNekuda(n.char);
                 btn.dataset.char = n.char;
-                btn.innerText = 'א' + n.char;
+                btn.innerHTML = '<span class="nekuda-char">\u05D0' + n.char + '</span><span class="nekuda-name">' + n.name + '</span>';
+                btn.setAttribute('aria-label', 'Add ' + n.name);
                 els.grid.appendChild(btn);
             });
+        }
+
+        // --- Toggle Editing ---
+        function toggleEditing() {
+            if (state.isEditing) {
+                editor.stopEditing();
+            } else {
+                editor.startEditing();
+            }
         }
 
         // --- Logic ---
@@ -156,6 +221,7 @@
         };
 
         function insertText(char) {
+            els.input.focus({ preventScroll: true });
             const start = els.input.selectionStart;
             const end = els.input.selectionEnd;
             const text = els.input.value;
@@ -169,10 +235,27 @@
             redo: historyManager.redo,
             restoreFocus: () => els.input.focus(),
             clearAll: () => {
-                if(confirm("Clear All?")) {
+                const btn = document.getElementById('btnClearAll');
+                if (state.clearConfirmTimeout) {
+                    // Second click: actually clear
+                    clearTimeout(state.clearConfirmTimeout);
+                    state.clearConfirmTimeout = null;
+                    btn.querySelector('.btn-label').textContent = document.documentElement.lang === 'he' ? 'נקה' : 'Clear';
+                    btn.classList.remove('confirming');
                     els.input.value = '';
                     editor.stopEditing();
                     historyManager.save();
+                    showToast(document.documentElement.lang === 'he' ? 'נוקה' : 'Cleared');
+                } else {
+                    // First click: ask confirmation
+                    const label = btn.querySelector('.btn-label');
+                    label.textContent = document.documentElement.lang === 'he' ? 'בטוח?' : 'Sure?';
+                    btn.classList.add('confirming');
+                    state.clearConfirmTimeout = setTimeout(() => {
+                        label.textContent = document.documentElement.lang === 'he' ? 'נקה' : 'Clear';
+                        btn.classList.remove('confirming');
+                        state.clearConfirmTimeout = null;
+                    }, 3000);
                 }
             },
             copyToClipboard: () => copyText(els.input.value),
@@ -181,40 +264,48 @@
         };
 
         async function copyText(txt) {
-            try { await navigator.clipboard.writeText(txt); alert("Copied!"); }
-            catch (e) { alert("Error copying"); }
+            try {
+                await navigator.clipboard.writeText(txt);
+                showToast(document.documentElement.lang === 'he' ? 'הועתק' : 'Copied to clipboard');
+            } catch (e) {
+                showToast(document.documentElement.lang === 'he' ? 'שגיאה בהעתקה' : 'Failed to copy');
+            }
         }
 
         // --- Editor Logic ---
         window.editor = {
             startEditing: () => {
                 const text = els.input.value;
-                if (!text) return els.input.focus();
+                if (!text) {
+                    els.input.focus();
+                    showToast(document.documentElement.lang === 'he'
+                        ? 'לפני עריכת ניקוד, יש להזין טקסט.'
+                        : 'Before editing Nikkudot, you must input some text.');
+                    return;
+                }
 
                 state.isEditing = true;
 
                 // Toggle UI
-                els.btns.start.style.display = 'none';
-                els.btns.stop.style.display = 'inline-flex';
-                ['prev', 'next', 'skip', 'stop'].forEach(k => els.btns[k].disabled = false);
+                els.appContainer.classList.add('editing');
+                els.btnToggleEdit.classList.add('active');
+                els.btnToggleEdit.textContent = document.documentElement.lang === 'he' ? 'עצור עריכה' : 'Stop Editing';
+                ['prev', 'next', 'skip'].forEach(k => els.btns[k].disabled = false);
+                els.btnClearLetter.disabled = false;
+
+                // Update status
+                els.statusText.textContent = document.documentElement.lang === 'he' ? 'עריכה...' : 'Editing...';
 
                 els.input.focus();
-
-                // Logic:
-                // 1. If user has a valid text selection (range), stick to it.
-                // 2. If no selection (selectionStart == selectionEnd), find FIRST Hebrew letter in entire text.
 
                 const start = els.input.selectionStart;
                 const end = els.input.selectionEnd;
 
                 if (end - start > 0) {
-                    // Selection exists. Just verify it contains a Hebrew letter and we are good.
-                    // We shrink to the first char of selection to be precise
                     if (HEBREW_RANGES.letters.test(text.substring(start, start+1))) {
                         els.input.setSelectionRange(start, start+1);
                     }
                 } else {
-                    // No selection. Start from beginning of text.
                     let foundIndex = -1;
                     for (let i = 0; i < text.length; i++) {
                         if (HEBREW_RANGES.letters.test(text[i])) {
@@ -228,18 +319,25 @@
                     }
                 }
 
-                // Force visualization update
                 editor.updateVisualization();
             },
 
             stopEditing: () => {
                 state.isEditing = false;
-                els.btns.start.style.display = 'inline-flex';
-                els.btns.stop.style.display = 'none';
+
+                els.appContainer.classList.remove('editing');
+                els.btnToggleEdit.classList.remove('active');
+                els.btnToggleEdit.textContent = document.documentElement.lang === 'he' ? 'התחל עריכה' : 'Start Editing';
                 ['prev', 'next', 'skip'].forEach(k => els.btns[k].disabled = true);
+                els.btnClearLetter.disabled = true;
 
                 // Disable grid
+                els.grid.classList.remove('active');
                 els.grid.querySelectorAll('button').forEach(btn => btn.disabled = true);
+                els.currentLetter.textContent = '--';
+
+                // Update status
+                els.statusText.textContent = document.documentElement.lang === 'he' ? 'מוכן' : 'Ready';
 
                 // Collapse selection to end
                 els.input.setSelectionRange(els.input.selectionEnd, els.input.selectionEnd);
@@ -256,7 +354,6 @@
                 const text = els.input.value;
                 let currentPos = els.input.selectionStart;
 
-                // Logic: Search directionally for the next/prev valid Hebrew Letter
                 if (direction === 1 && els.input.selectionStart !== els.input.selectionEnd) {
                     currentPos = els.input.selectionStart + 1;
                 } else if (direction === -1) {
@@ -280,7 +377,6 @@
                     limit++;
                 }
 
-                // If not found, keep focus
                 els.input.focus();
             },
 
@@ -290,9 +386,9 @@
                 const start = els.input.selectionStart;
                 const end = els.input.selectionEnd;
 
-                // If not exactly one char selected, disable grid
                 if (end - start !== 1) {
                     editor.setGridEnabled(false);
+                    els.currentLetter.textContent = '--';
                     return;
                 }
 
@@ -300,18 +396,29 @@
 
                 if (HEBREW_RANGES.letters.test(char)) {
                     editor.setGridEnabled(true);
-                    // Dynamically update button labels
-                    const buttons = els.grid.querySelectorAll('.btn-nekuda:not(.clear-nekuda)');
+                    els.currentLetter.textContent = char;
+                    // Update nekuda preview characters
+                    const buttons = els.grid.querySelectorAll('.btn-nekuda');
                     buttons.forEach(btn => {
-                         btn.innerText = char + btn.dataset.char;
+                        const charSpan = btn.querySelector('.nekuda-char');
+                        if (charSpan) charSpan.textContent = char + btn.dataset.char;
                     });
+                    // Update status text
+                    els.statusText.textContent = (document.documentElement.lang === 'he' ? 'עריכה: ' : 'Editing: ') + char;
                 } else {
                     editor.setGridEnabled(false);
+                    els.currentLetter.textContent = '--';
                 }
             },
 
             setGridEnabled: (isEnabled) => {
+                if (isEnabled) {
+                    els.grid.classList.add('active');
+                } else {
+                    els.grid.classList.remove('active');
+                }
                 els.grid.querySelectorAll('button').forEach(btn => btn.disabled = !isEnabled);
+                els.btnClearLetter.disabled = !isEnabled;
             },
 
             applyNekuda: (nekudaChar) => {
@@ -326,13 +433,11 @@
                 const baseChar = text.substring(start, end);
                 if (!HEBREW_RANGES.letters.test(baseChar)) return;
 
-                // Insert Nekuda
                 const newText = text.substring(0, end) + nekudaChar + text.substring(end);
                 els.input.value = newText;
 
                 historyManager.save();
 
-                // Move Past
                 els.input.setSelectionRange(end + 1, end + 1);
                 editor.move(1);
             },
@@ -346,7 +451,6 @@
                 let text = els.input.value;
                 let lookAhead = end;
 
-                // Remove combining chars after selection
                 while(lookAhead < text.length && HEBREW_RANGES.isNekuda(text[lookAhead])) {
                     text = text.substring(0, lookAhead) + text.substring(lookAhead + 1);
                 }
@@ -354,6 +458,7 @@
                 els.input.value = text;
                 els.input.setSelectionRange(start, end);
                 historyManager.save();
+                editor.updateVisualization();
             }
         };
 
