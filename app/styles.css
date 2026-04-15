@@ -364,6 +364,7 @@ button svg {
     flex: 1;
     background: var(--surface-0);
     font-size: var(--text-sm);
+    min-height: 32px;
 }
 
 .btn-nav svg {
@@ -386,7 +387,7 @@ button svg {
 
 .current-letter-display {
     font-family: var(--font-editor);
-    font-size: var(--text-xl);
+    font-size: var(--text-editor);
     color: var(--accent);
     min-width: 2em;
     text-align: center;
@@ -417,13 +418,13 @@ button svg {
     align-items: center;
     justify-content: center;
     font-family: var(--font-editor);
-    font-size: 1.4rem;
+    font-size: 2rem;
     padding: var(--sp-1);
     min-height: 52px;
     border-radius: var(--radius-sm);
     background: var(--surface-0);
     unicode-bidi: isolate;
-    line-height: 1.2;
+    line-height: .8;
 }
 
 .btn-nekuda .nekuda-name {
