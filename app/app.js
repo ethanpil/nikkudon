@@ -85,7 +85,7 @@
             // Restore btnToggleEdit text (i18n won't touch it since we removed i18n-he from it)
             els.btnToggleEdit.textContent = wasEditing
                 ? (lang === 'he' ? 'עצור עריכה' : 'Stop Editing')
-                : (lang === 'he' ? 'התחל עריכה' : 'Start Editing');
+                : (lang === 'he' ? 'התחל לערוך ניקודות' : 'Start Nikkudot Editor');
 
             // Restore cursor and editing state
             els.input.setSelectionRange(cursorStart, cursorEnd);
@@ -328,7 +328,7 @@
 
                 els.appContainer.classList.remove('editing');
                 els.btnToggleEdit.classList.remove('active');
-                els.btnToggleEdit.textContent = document.documentElement.lang === 'he' ? 'התחל עריכה' : 'Start Editing';
+                els.btnToggleEdit.textContent = document.documentElement.lang === 'he' ? 'התחל לערוך ניקודות' : 'Start Nikkudot Editor';
                 ['prev', 'next', 'skip'].forEach(k => els.btns[k].disabled = true);
                 els.btnClearLetter.disabled = true;
 
