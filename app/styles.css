@@ -857,6 +857,22 @@ select:focus {
     color: var(--text-1);
 }
 
+.btn-feedback {
+    min-width: 36px;
+    min-height: 36px;
+    padding: var(--sp-1);
+    border-radius: 50%;
+    font-size: var(--text-sm);
+    font-weight: 700;
+    color: var(--text-3);
+    border-color: var(--border-2);
+}
+
+.btn-feedback:hover:not(:disabled) {
+    background: var(--surface-2);
+    color: var(--text-1);
+}
+
 .btn-tour {
     font-size: var(--text-xs);
     min-height: 32px;

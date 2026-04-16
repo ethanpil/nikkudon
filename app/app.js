@@ -1,4 +1,7 @@
-
+        const handleRenderSurvey = () => {
+          posthog.renderSurvey('019d9395-e129-0000-9933-b529d5bfeb5e', '#survey-container');
+        };
+        
         const HEBREW_RANGES = {
             letters: /[\u05D0-\u05EA]/,
             nekudot: /[\u0591-\u05C7]/g,
